@@ -85,4 +85,76 @@ function deleteOutdatedSnapshots($token, $apiUrl, $dropletId)
     }
 }
 
+/**
+ * Função para deletar um snapshot.
+ *
+ * @param string $id          O ID do snapshot a ser deletado.
+ * @param string $token       O token de autenticação DigitalOcean.
+ * @param string $apiUrl      A URL base da API DigitalOcean.
+ * @param string $dropletId   O ID do Droplet associado ao snapshot.
+ * @return void
+ */
+function deleteSnapshot($id, $token, $apiUrl, $dropletId)
+{
+    // Verifica se o ID do snapshot é válido
+    if ($id) {
+        // Inicia a sessão cURL
+        $ch = curl_init();
+
+        // Configura as opções da requisição cURL
+        curl_setopt($ch, CURLOPT_URL, $apiUrl . 'images/' . $id);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $token
+        ));
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0);
+
+        // Executa a requisição cURL
+        curl_exec($ch);
+
+        // Fecha a sessão cURL
+        curl_close($ch);
+    }
+}
+
+/**
+ * Função para obter os snapshots de um Droplet.
+ *
+ * @param string $token       O token de autenticação DigitalOcean.
+ * @param string $apiUrl      A URL base da API DigitalOcean.
+ * @param string $dropletId   O ID do Droplet para o qual serão obtidos os snapshots.
+ * @return array             A lista de snapshots do Droplet.
+ */
+function getSnapshots($token, $apiUrl, $dropletId)
+{
+    // Inicia a sessão cURL
+    $ch = curl_init();
+
+    // Configura as opções da requisição cURL
+    curl_setopt($ch, CURLOPT_URL, $apiUrl . 'droplets/' . $dropletId . '/snapshots');
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        'Content-Type: application/json',
+        'Authorization: Bearer ' . $token
+    ));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0);
+
+    // Executa a requisição cURL
+    $response = curl_exec($ch);
+
+    // Fecha a sessão cURL
+    curl_close($ch);
+
+    // Decodifica a resposta JSON
+    $result = json_decode($response);
+
+    // Retorna a lista de snapshots, se houver
+    if ($result) {
+        return $result->snapshots;
+    }
+    return [];
+}
+
 ?>
